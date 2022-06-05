@@ -9,13 +9,14 @@ if __name__ == '__main__':
     calories_threshold = 200
 
     consumer = KafkaConsumer(parsed_topic_name, auto_offset_reset='earliest',
-                             bootstrap_servers=['localhost:9092'], api_version=(0, 10), consumer_timeout_ms=1000)
+                             bootstrap_servers=['localhost:9091'], api_version=(0, 10), consumer_timeout_ms=1000)
     for msg in consumer:
         record = json.loads(msg.value)
         calories = int(record['calories'])
         title = record['title']
-
-        if calories > calories_threshold:
+        if calories < calories_threshold:
+            print('{} has {} calories'.format(title, calories))
+        if calories >= calories_threshold:
             print('Alert: {} calories count is {}'.format(title, calories))
         sleep(3)
 

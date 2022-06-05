@@ -20,7 +20,7 @@ def publish_message(producer_instance, topic_name, key, value):
 def connect_kafka_producer():
     _producer = None
     try:
-        _producer = KafkaProducer(bootstrap_servers=['localhost:9092'], api_version=(0, 10))
+        _producer = KafkaProducer(bootstrap_servers=['localhost:9091'], api_version=(0, 10))
     except Exception as ex:
         print('Exception while connecting Kafka')
         print(str(ex))
@@ -30,7 +30,7 @@ def connect_kafka_producer():
 
 def fetch_raw(recipe_url):
     html = None
-    print('Processing..{}'.format(recipe_url))
+    print('Processing: {}'.format(recipe_url))
     try:
         r = requests.get(recipe_url, headers=headers)
         if r.status_code == 200:
@@ -44,7 +44,6 @@ def fetch_raw(recipe_url):
 
 def get_recipes():
     recipies = []
-    salad_url = 'https://www.allrecipes.com/recipes/96/salad/'
     url = 'https://www.allrecipes.com/recipes/96/salad/'
     print('Accessing list')
 
@@ -53,10 +52,12 @@ def get_recipes():
         if r.status_code == 200:
             html = r.text
             soup = BeautifulSoup(html, 'lxml')
-            links = soup.select('.fixed-recipe-card__h3 a')
+            links = soup.select('.card__imageContainer > a')
             idx = 0
+            n = 3
             for link in links:
-
+                if idx >= n:
+                    break
                 sleep(2)
                 recipe = fetch_raw(link['href'])
                 recipies.append(recipe)
@@ -77,6 +78,7 @@ if __name__ == '__main__':
     all_recipes = get_recipes()
     if len(all_recipes) > 0:
         kafka_producer = connect_kafka_producer()
+        print('Connected to Kafka: ', kafka_producer)
         for recipe in all_recipes:
             publish_message(kafka_producer, 'raw_recipes', 'raw', recipe.strip())
         if kafka_producer is not None:
