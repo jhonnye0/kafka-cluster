@@ -88,3 +88,5 @@ if __name__ == '__main__':
         producer = connect_kafka_producer()
         for rec in parsed_records:
             publish_message(producer, parsed_topic_name, 'parsed', rec)
+        if producer is not None:
+            producer.close()
