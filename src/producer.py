@@ -42,8 +42,8 @@ def fetch_raw(recipe_url):
         return html.strip()
 
 
-def get_recipes():
-    recipies = []
+def get_news():
+    news = []
     url = 'https://ufal.br'
     print('Accessing list')
 
@@ -59,14 +59,14 @@ def get_recipes():
                 if idx >= n:
                     break
                 sleep(2)
-                recipe = fetch_raw(link['href'])
-                recipies.append(recipe)
+                new = fetch_raw(link['href'])
+                news.append(new)
                 idx += 1
     except Exception as ex:
         print('Exception in get_news')
         print(str(ex))
     finally:
-        return recipies
+        return news
 
 
 if __name__ == '__main__':
@@ -75,7 +75,7 @@ if __name__ == '__main__':
         'Pragma': 'no-cache'
     }
 
-    all_recipes = get_recipes()
+    all_recipes = get_news()
     if len(all_recipes) > 0:
         kafka_producer = connect_kafka_producer()
         print('Connected to Kafka: ', kafka_producer)
