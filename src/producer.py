@@ -28,11 +28,11 @@ def connect_kafka_producer():
         return _producer
 
 
-def fetch_raw(recipe_url):
+def fetch_raw(news_url):
     html = None
-    print('Processing: {}'.format(recipe_url))
+    print('Processing: {}'.format(news_url))
     try:
-        r = requests.get(recipe_url, headers=headers)
+        r = requests.get(news_url, headers=headers)
         if r.status_code == 200:
             html = r.text
     except Exception as ex:
@@ -42,8 +42,8 @@ def fetch_raw(recipe_url):
         return html.strip()
 
 
-def get_recipes():
-    recipies = []
+def get_news():
+    news = []
     url = 'https://ufal.br'
     print('Accessing list')
 
@@ -59,14 +59,14 @@ def get_recipes():
                 if idx >= n:
                     break
                 sleep(2)
-                recipe = fetch_raw(link['href'])
-                recipies.append(recipe)
+                new = fetch_raw(link['href'])
+                news.append(new)
                 idx += 1
     except Exception as ex:
         print('Exception in get_news')
         print(str(ex))
     finally:
-        return recipies
+        return news
 
 
 if __name__ == '__main__':
@@ -75,11 +75,11 @@ if __name__ == '__main__':
         'Pragma': 'no-cache'
     }
 
-    all_recipes = get_recipes()
-    if len(all_recipes) > 0:
+    all_news = get_news()
+    if len(all_news) > 0:
         kafka_producer = connect_kafka_producer()
         print('Connected to Kafka: ', kafka_producer)
-        for recipe in all_recipes:
-            publish_message(kafka_producer, 'raw_news', 'raw', recipe.strip())
+        for news in all_news:
+            publish_message(kafka_producer, 'raw_news', 'raw', news.strip())
         if kafka_producer is not None:
             kafka_producer.close()
