@@ -44,7 +44,7 @@ def fetch_raw(recipe_url):
 
 def get_recipes():
     recipies = []
-    url = 'https://www.allrecipes.com/recipes/96/salad/'
+    url = 'https://ufal.br'
     print('Accessing list')
 
     try:
@@ -52,9 +52,9 @@ def get_recipes():
         if r.status_code == 200:
             html = r.text
             soup = BeautifulSoup(html, 'lxml')
-            links = soup.select('.card__imageContainer > a')
+            links = soup.select('ul > li > div > a:nth-child(2)')
             idx = 0
-            n = 3
+            n = 4
             for link in links:
                 if idx >= n:
                     break
@@ -63,7 +63,7 @@ def get_recipes():
                 recipies.append(recipe)
                 idx += 1
     except Exception as ex:
-        print('Exception in get_recipes')
+        print('Exception in get_news')
         print(str(ex))
     finally:
         return recipies
@@ -80,6 +80,6 @@ if __name__ == '__main__':
         kafka_producer = connect_kafka_producer()
         print('Connected to Kafka: ', kafka_producer)
         for recipe in all_recipes:
-            publish_message(kafka_producer, 'raw_recipes', 'raw', recipe.strip())
+            publish_message(kafka_producer, 'raw_news', 'raw', recipe.strip())
         if kafka_producer is not None:
             kafka_producer.close()

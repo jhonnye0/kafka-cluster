@@ -32,35 +32,20 @@ def parse(markup):
     title = '-'
     submit_by = '-'
     description = '-'
-    calories = 0
-    ingredients = []
+    publication_date = '-'
     rec = {}
 
     try:
 
         soup = BeautifulSoup(markup, 'lxml')
         # title
-        title_section = soup.select('div.intro.article-info > div > h1')
-        # submitter
-        submitter_section = soup.select('.submitter__name')
-        # description
-        description_section = soup.select('div.recipe-summary.elementFont__dek--within > p')
-        # ingredients
-        ingredients_section = soup.select('.recipe-ingred_txt')
-
-        # calories
-        calories_section = soup.select('.calorie-count')
-        if calories_section:
-            calories = calories_section[0].text.replace('cals', '').strip()
-
-        if ingredients_section:
-            for ingredient in ingredients_section:
-                ingredient_text = ingredient.text.strip()
-                if 'Add all ingredients to list' not in ingredient_text and ingredient_text != '':
-                    ingredients.append({'step': ingredient.text.strip()})
-
-        if description_section:
-            description = description_section[0].text.strip().replace('"', '')
+        title_section = soup.select('#content > header > h1')
+        #submitter
+        submitter_section = soup.select('#viewlet-above-content-body > div.detalhe-noticia > strong')
+        #description
+        description_section = soup.select('#content > header > div.documentDescription.description')
+        #date_submitter
+        publication_date_section = soup.select('#viewlet-above-content-body > div.detalhe-noticia > span')
 
         if submitter_section:
             submit_by = submitter_section[0].text.strip()
@@ -68,9 +53,14 @@ def parse(markup):
         if title_section:
             title = title_section[0].text
 
-        rec = {'title': title, 'submitter': submit_by, 'description': description, 'calories': calories,
-               'ingredients': ingredients}
+        if description_section:
+            description = description_section[0].text.strip().replace('"', '')
 
+        if publication_date_section:
+            publication_date = publication_date_section[0].text.strip().replace('"', '')
+
+        rec = {'title': title, 'submit_by': submit_by, 'description': description,
+               'publication_date': publication_date}
     except Exception as ex:
         print('Exception while parsing')
         print(str(ex))
@@ -81,8 +71,8 @@ def parse(markup):
 if __name__ == '__main__':
     print('Running Consumer..')
     parsed_records = []
-    topic_name = 'raw_recipes'
-    parsed_topic_name = 'parsed_recipes'
+    topic_name = 'raw_news'
+    parsed_topic_name = 'parsed_news'
 
     consumer = KafkaConsumer(topic_name, auto_offset_reset='earliest',
                              bootstrap_servers=['localhost:9091'], api_version=(0, 10), consumer_timeout_ms=1000)
